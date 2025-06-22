@@ -10,15 +10,43 @@
 
 pub mod document;
 
+/// Error handling module for the library.
+pub mod error {
+    use rsmpeg::error::RsmpegError;
+    use std::{ffi::NulError, ops::Deref};
+
+    type AVMuxErrorInner = terrors::OneOf<(RsmpegError, NulError)>;
+
+    /// Type alias for errors that can occur in the library.
+    pub struct AVMuxError(AVMuxErrorInner);
+
+    impl Deref for AVMuxError {
+        type Target = AVMuxErrorInner;
+
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+    }
+
+    impl From<RsmpegError> for AVMuxError {
+        fn from(err: RsmpegError) -> Self {
+            Self(terrors::OneOf::new(err))
+        }
+    }
+
+    impl From<NulError> for AVMuxError {
+        fn from(err: NulError) -> Self {
+            Self(terrors::OneOf::new(err))
+        }
+    }
+}
+
 use std::collections::HashMap;
 use std::ffi::{CString, NulError};
 use std::path::Path;
 
-use rsmpeg::{
-    avformat::{AVFormatContextInput, AVFormatContextOutput},
-    error::RsmpegError,
-};
-use terrors::OneOf;
+use error::AVMuxError;
+use rsmpeg::avformat::{AVFormatContextInput, AVFormatContextOutput};
 use url::Url;
 
 /// Represents a file with a URL.
@@ -49,29 +77,29 @@ impl AVFile {
     }
 
     /// Open the file as format context input.
-    fn ifmt_ctx(&self) -> Result<AVFormatContextInput, OneOf<(RsmpegError, NulError)>> {
-        let c_path = self.url_path().map_err(OneOf::new)?;
-        AVFormatContextInput::open(c_path.as_c_str(), None, &mut None).map_err(OneOf::new)
+    fn ifmt_ctx(&self) -> Result<AVFormatContextInput, AVMuxError> {
+        let c_path = self.url_path()?;
+        AVFormatContextInput::open(c_path.as_c_str(), None, &mut None).map_err(Into::into)
     }
 
     /// Open the file as format context output.
-    fn ofmt_ctx(&self) -> Result<AVFormatContextOutput, OneOf<(RsmpegError, NulError)>> {
-        let c_path = self.url_path().map_err(OneOf::new)?;
-        AVFormatContextOutput::create(c_path.as_c_str(), None).map_err(OneOf::new)
+    fn ofmt_ctx(&self) -> Result<AVFormatContextOutput, AVMuxError> {
+        let c_path = self.url_path()?;
+        AVFormatContextOutput::create(c_path.as_c_str(), None).map_err(Into::into)
     }
 }
 
 /// Trait for merging multiple media files into one.
 pub trait Mux {
     /// Merges multiple media files into a single output file.
-    fn mux(self, output: AVFile) -> Result<(), OneOf<(RsmpegError, NulError)>>;
+    fn mux(self, output: AVFile) -> Result<(), AVMuxError>;
 }
 
 impl<FS> Mux for FS
 where
     FS: IntoIterator<Item = AVFile>,
 {
-    fn mux(self, output: AVFile) -> Result<(), OneOf<(RsmpegError, NulError)>> {
+    fn mux(self, output: AVFile) -> Result<(), AVMuxError> {
         let mut ofmt_ctx = output.ofmt_ctx()?;
         let mut stream_maps = vec![];
         for file in self.into_iter() {
@@ -88,7 +116,7 @@ where
             }
             stream_maps.push((ifmt_ctx, map));
         }
-        ofmt_ctx.write_header(&mut None).map_err(OneOf::new)?;
+        ofmt_ctx.write_header(&mut None)?;
         for (mut ifmt_ctx, map) in stream_maps.into_iter() {
             loop {
                 match ifmt_ctx.read_packet() {
@@ -98,18 +126,16 @@ where
                         };
                         packet.set_stream_index(*index);
                         packet.set_pos(-1);
-                        ofmt_ctx
-                            .interleaved_write_frame(&mut packet)
-                            .map_err(OneOf::new)?;
+                        ofmt_ctx.interleaved_write_frame(&mut packet)?;
                     }
                     Ok(None) => break,
                     e => {
-                        e.map_err(OneOf::new)?;
+                        e?;
                     }
                 }
             }
         }
-        ofmt_ctx.write_trailer().map_err(OneOf::new)?;
+        ofmt_ctx.write_trailer()?;
         Ok(())
     }
 }
