@@ -66,9 +66,6 @@ impl AVFile {
 
     /// Creates a new `File` from a file path.
     pub fn from_path(path: impl AsRef<Path>) -> Result<Self, std::io::Error> {
-        if !path.as_ref().exists() {
-            return Err(std::io::ErrorKind::NotFound)?;
-        }
         let url = Url::from_file_path(path).map_err(|_| std::io::ErrorKind::InvalidInput)?;
         Ok(Self { url })
     }
