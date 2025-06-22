@@ -94,6 +94,11 @@ This crate provides a simple way to merge video and audio files into a single ou
     - **macOS**: Use Homebrew to install FFmpeg, e.g., `brew install ffmpeg`
     - **Windows**: I don't know
 
+* install pkg-config
+    - **Linux**: Use your package manager to install pkg-config, e.g., `sudo pacman -S pkgconf`
+    - **macOS**: Use Homebrew to install pkg-config, e.g., `brew install pkgconf`
+    - **Windows**: I don't know
+
 ### Importing the Crate
 
 To use this crate in your Rust project, add the following to your `Cargo.toml`:
