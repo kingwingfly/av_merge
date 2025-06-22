@@ -9,70 +9,32 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 pub mod document;
-
-/// Error handling module for the library.
-pub mod error {
-    use rsmpeg::error::RsmpegError;
-    use std::{ffi::NulError, ops::Deref};
-
-    type AVMuxErrorInner = terrors::OneOf<(RsmpegError, NulError)>;
-
-    /// Type alias for errors that can occur in the library.
-    #[derive(Debug)]
-    pub struct AVMuxError(AVMuxErrorInner);
-
-    impl Deref for AVMuxError {
-        type Target = AVMuxErrorInner;
-
-        fn deref(&self) -> &Self::Target {
-            &self.0
-        }
-    }
-
-    impl From<RsmpegError> for AVMuxError {
-        fn from(err: RsmpegError) -> Self {
-            Self(terrors::OneOf::new(err))
-        }
-    }
-
-    impl From<NulError> for AVMuxError {
-        fn from(err: NulError) -> Self {
-            Self(terrors::OneOf::new(err))
-        }
-    }
-}
+pub mod error;
 
 use std::collections::HashMap;
 use std::ffi::{CString, NulError};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use error::AVMuxError;
 use rsmpeg::avformat::{AVFormatContextInput, AVFormatContextOutput};
-use url::Url;
 
-/// Represents a file with a URL.
+/// Represents an input file with a URL.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AVFile {
+pub struct AVFileInput {
     /// The URL of the file.
-    pub url: Url,
+    pub path_url: String,
 }
 
-impl AVFile {
+impl AVFileInput {
     /// Creates a new `File` from a URL.
-    pub fn new(url: impl AsRef<str>) -> Result<Self, url::ParseError> {
-        let url = Url::parse(url.as_ref())?;
-        Ok(Self { url })
-    }
-
-    /// Creates a new `File` from a file path.
-    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, std::io::Error> {
-        let path = path.as_ref().canonicalize()?;
-        let url = Url::from_file_path(path).map_err(|_| std::io::ErrorKind::InvalidInput)?;
-        Ok(Self { url })
+    pub fn new(path_url: impl AsRef<str>) -> Self {
+        Self {
+            path_url: path_url.as_ref().to_owned(),
+        }
     }
 
     fn url_path(&self) -> Result<CString, NulError> {
-        CString::new(self.url.as_str())
+        CString::new(self.path_url.as_str())
     }
 
     /// Open the file as format context input.
@@ -80,25 +42,44 @@ impl AVFile {
         let c_path = self.url_path()?;
         AVFormatContextInput::open(c_path.as_c_str(), None, &mut None).map_err(Into::into)
     }
+}
+
+/// Represents an output file with a URL.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AVFileOutput {
+    /// The PathBuf of the file.
+    pub path: PathBuf,
+}
+
+impl AVFileOutput {
+    /// Creates a new `File` from a file path.
+    pub fn new(path: impl AsRef<Path>) -> Self {
+        Self {
+            path: path.as_ref().to_path_buf(),
+        }
+    }
 
     /// Open the file as format context output.
     fn ofmt_ctx(&self) -> Result<AVFormatContextOutput, AVMuxError> {
-        let c_path = self.url_path()?;
-        AVFormatContextOutput::create(c_path.as_c_str(), None).map_err(Into::into)
+        AVFormatContextOutput::create(
+            &CString::new(self.path.to_string_lossy().into_owned())?,
+            None,
+        )
+        .map_err(Into::into)
     }
 }
 
 /// Trait for merging multiple media files into one.
 pub trait Mux {
     /// Merges multiple media files into a single output file.
-    fn mux(self, output: AVFile) -> Result<(), AVMuxError>;
+    fn mux(self, output: AVFileOutput) -> Result<(), AVMuxError>;
 }
 
 impl<FS> Mux for FS
 where
-    FS: IntoIterator<Item = AVFile>,
+    FS: IntoIterator<Item = AVFileInput>,
 {
-    fn mux(self, output: AVFile) -> Result<(), AVMuxError> {
+    fn mux(self, output: AVFileOutput) -> Result<(), AVMuxError> {
         let mut ofmt_ctx = output.ofmt_ctx()?;
         let mut stream_maps = vec![];
         for file in self.into_iter() {
@@ -123,6 +104,9 @@ where
                         let Some(index) = map.get(&packet.stream_index) else {
                             continue;
                         };
+                        let old_ts = ifmt_ctx.streams()[packet.stream_index as usize].time_base;
+                        let new_ts = ofmt_ctx.streams()[*index as usize].time_base;
+                        packet.rescale_ts(old_ts, new_ts);
                         packet.set_stream_index(*index);
                         packet.set_pos(-1);
                         ofmt_ctx.interleaved_write_frame(&mut packet)?;
@@ -136,5 +120,19 @@ where
         }
         ofmt_ctx.write_trailer()?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_av_file_mux() {
+        let file1 = AVFileInput::new("testa.mp3");
+        let file2 = AVFileInput::new("testv.mp4");
+        let output = AVFileOutput::new("output.mp4");
+        let files = vec![file1, file2];
+        files.mux(output).unwrap();
     }
 }

@@ -3,3 +3,5 @@ Cargo.lock
 .DS_Store
 temp.*
 .env
+*.mp4
+*.mp3
