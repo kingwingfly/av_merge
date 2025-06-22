@@ -1,11 +1,11 @@
 [package]
-name = "xxx_core"
+name = "av_merge"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = ""
+description = "A crate to merge video and audio based on rsmpeg (dynamic link with ffmpeg lib)."
 
 [package.metadata.docs.rs]
 all-features = true

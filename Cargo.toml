@@ -1,5 +1,5 @@
 [workspace]
-members = ["xxx_core"]
+members = ["av_merge"]
 resolver = "2"
 
 [workspace.package]
@@ -8,11 +8,11 @@ authors = ["Louis <836250617@qq.com>"]
 description = ""
 license = "MIT"
 edition = "2021"
-repository = "https://github.com/kingwingfly/xxx"
-documentation = "https://docs.rs/xxx"
+repository = "https://github.com/kingwingfly/av_merge"
+documentation = "https://docs.rs/av_merge"
 
 [workspace.dependencies]
-xxx_core = { path = "xxx_core" }
+av_merge = { path = "av_merge" }
 # async
 tokio = { version = "1", default-features = false }
 
