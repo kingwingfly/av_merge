@@ -14,5 +14,4 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 rsmpeg = { version = "0.16.1", features = ["link_system_ffmpeg"] }
 terrors = { version = "0.3.3" }
-tokio = { workspace = true, features = ["rt-multi-thread", "signal", "macros"] }
-url = { version = "2.5.4" }
+url = { version = "2.5" }

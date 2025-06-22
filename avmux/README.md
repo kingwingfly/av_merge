@@ -70,6 +70,7 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://github.com/kingwingfly/avmux)
 
+This crate provides a simple way to merge video and audio files into a single output file. It uses the rsmpeg library, which is a Rust binding for FFmpeg, to handle the underlying media processing.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -88,21 +89,19 @@
 
 ### Prerequisites
 
-* Install Rust
-  ```sh
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-  ```
+* Install FFmpeg and its development libraries
+    - **Linux**: Use your package manager to install FFmpeg, e.g., `sudo apt install ffmpeg` or `sudo pacman -S ffmpeg`
+    - **macOS**: Use Homebrew to install FFmpeg, e.g., `brew install ffmpeg`
+    - **Windows**: I don't know
 
-### Compilation
+### Importing the Crate
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/kingwingfly/avmux.git
-   ```
-2. Compilation
-   ```sh
-   cargo build --release
-   ```
+To use this crate in your Rust project, add the following to your `Cargo.toml`:
+
+```toml
+[dependencies]
+avmux = { version = "0.1"}
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -111,7 +110,15 @@
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+```rust no_run
+use avmux::{AVFile, Mux as _};
+use std::path::PathBuf;
+
+let video_file = AVFile::from_path(PathBuf::from("input_video.mp4"));
+let audio_file = AVFile::new("https://music.com/input_audio.mp3").unwrap();
+let output_file = AVFile::new("output.mp4").unwrap();
+[video_file, audio_file].mux(output_file).unwrap();
+```
 
 _For more examples, please refer to the [Documentation](https://crates.io/avmux)_
 

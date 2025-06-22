@@ -11,8 +11,6 @@ documentation = "https://docs.rs/avmux"
 
 [workspace.dependencies]
 avmux = { path = "avmux" }
-# async
-tokio = { version = "1", default-features = false }
 
 [profile.release]
 lto = "fat"

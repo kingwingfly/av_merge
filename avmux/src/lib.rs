@@ -1,4 +1,6 @@
-#![doc = include_str!("../README.md")]
+//! A library for merging multiple media files into one using the ffmpeg library.
+//!
+//! More information can be found in the [`document`].
 #![deny(
     missing_docs,
     rustdoc::broken_intra_doc_links,
@@ -10,6 +12,7 @@ pub mod document;
 
 use std::collections::HashMap;
 use std::ffi::{CString, NulError};
+use std::path::Path;
 
 use rsmpeg::{
     avformat::{AVFormatContextInput, AVFormatContextOutput},
@@ -32,6 +35,15 @@ impl AVFile {
         Ok(Self { url })
     }
 
+    /// Creates a new `File` from a file path.
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, std::io::Error> {
+        if !path.as_ref().exists() {
+            return Err(std::io::ErrorKind::NotFound)?;
+        }
+        let url = Url::from_file_path(path).map_err(|_| std::io::ErrorKind::InvalidInput)?;
+        Ok(Self { url })
+    }
+
     fn url_path(&self) -> Result<CString, NulError> {
         CString::new(self.url.as_str())
     }
@@ -46,16 +58,6 @@ impl AVFile {
     fn ofmt_ctx(&self) -> Result<AVFormatContextOutput, OneOf<(RsmpegError, NulError)>> {
         let c_path = self.url_path().map_err(OneOf::new)?;
         AVFormatContextOutput::create(c_path.as_c_str(), None).map_err(OneOf::new)
-    }
-}
-
-impl<P> From<P> for AVFile
-where
-    P: AsRef<std::path::Path>,
-{
-    fn from(path: P) -> Self {
-        let url = Url::from_file_path(path).expect("Failed to convert path to URL");
-        Self { url }
     }
 }
 
