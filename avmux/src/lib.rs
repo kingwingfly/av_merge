@@ -1,4 +1,4 @@
-//! A library for merging multiple media files into one using the ffmpeg library.
+//! A crate to merge video and audio based on rsmpeg (dynamic link with ffmpeg lib).
 //!
 //! More information can be found in the [`document`].
 #![deny(
@@ -18,6 +18,7 @@ pub mod error {
     type AVMuxErrorInner = terrors::OneOf<(RsmpegError, NulError)>;
 
     /// Type alias for errors that can occur in the library.
+    #[derive(Debug)]
     pub struct AVMuxError(AVMuxErrorInner);
 
     impl Deref for AVMuxError {
