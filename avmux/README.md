@@ -113,9 +113,9 @@ avmux = { version = "0.1" }
 use avmux::{AVFile, Mux as _};
 use std::path::PathBuf;
 
-let video_file = AVFile::from_path(PathBuf::from("input_video.mp4")).unwrap();
-let audio_file = AVFile::new("https://music.com/input_audio.mp3").unwrap();
-let output_file = AVFile::new("output.mp4").unwrap();
+let video_file = AVFile::new("input_video.mp4");
+let audio_file = AVFile::new("https://music.com/input_audio.mp3");
+let output_file = AVFile::new("output.mp4");
 [video_file, audio_file].mux(output_file).unwrap();
 ```
 
