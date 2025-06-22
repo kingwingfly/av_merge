@@ -1,18 +1,16 @@
 [workspace]
-members = ["av_merge"]
+members = ["avmux"]
 resolver = "2"
 
 [workspace.package]
-version = "0.0.1"
 authors = ["Louis <836250617@qq.com>"]
-description = ""
 license = "MIT"
-edition = "2021"
-repository = "https://github.com/kingwingfly/av_merge"
-documentation = "https://docs.rs/av_merge"
+edition = "2024"
+repository = "https://github.com/kingwingfly/avmux"
+documentation = "https://docs.rs/avmux"
 
 [workspace.dependencies]
-av_merge = { path = "av_merge" }
+avmux = { path = "avmux" }
 # async
 tokio = { version = "1", default-features = false }
 

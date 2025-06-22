@@ -15,7 +15,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/kingwingfly/av_merge">
+  <a href="https://github.com/kingwingfly/avmux">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -24,14 +24,14 @@
   <p align="center">
     A crate to merge video and audio based on rsmpeg (dynamic link with ffmpeg lib)
     <br />
-    <a href="https://github.com/kingwingfly/av_merge"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/kingwingfly/avmux"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/kingwingfly/av_merge">View Demo</a>
+    <a href="https://github.com/kingwingfly/avmux">View Demo</a>
     ·
-    <a href="https://github.com/kingwingfly/av_merge/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/kingwingfly/avmux/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/kingwingfly/av_merge/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/kingwingfly/avmux/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -68,7 +68,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://github.com/kingwingfly/av_merge)
+[![Product Name Screen Shot][product-screenshot]](https://github.com/kingwingfly/avmux)
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -97,7 +97,7 @@
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/kingwingfly/av_merge.git
+   git clone https://github.com/kingwingfly/avmux.git
    ```
 2. Compilation
    ```sh
@@ -113,7 +113,7 @@
 
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-_For more examples, please refer to the [Documentation](https://crates.io/av_merge)_
+_For more examples, please refer to the [Documentation](https://crates.io/avmux)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -124,7 +124,7 @@ _For more examples, please refer to the [Documentation](https://crates.io/av_mer
 
 - [ ] Feature
 
-See the [open issues](https://github.com/kingwingfly/av_merge/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/kingwingfly/avmux/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -162,7 +162,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Louis - 836250617@qq.com
 
-Project Link: [https://github.com/kingwingfly/av_merge](https://github.com/kingwingfly/av_merge)
+Project Link: [https://github.com/kingwingfly/avmux](https://github.com/kingwingfly/avmux)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -179,16 +179,16 @@ Project Link: [https://github.com/kingwingfly/av_merge](https://github.com/kingw
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/kingwingfly/av_merge.svg?style=for-the-badge
-[contributors-url]: https://github.com/kingwingfly/av_merge/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/kingwingfly/av_merge.svg?style=for-the-badge
-[forks-url]: https://github.com/kingwingfly/av_merge/network/members
-[stars-shield]: https://img.shields.io/github/stars/kingwingfly/av_merge.svg?style=for-the-badge
-[stars-url]: https://github.com/kingwingfly/av_merge/stargazers
-[issues-shield]: https://img.shields.io/github/issues/kingwingfly/av_merge.svg?style=for-the-badge
-[issues-url]: https://github.com/kingwingfly/av_merge/issues
-[license-shield]: https://img.shields.io/github/license/kingwingfly/av_merge.svg?style=for-the-badge
-[license-url]: https://github.com/kingwingfly/av_merge/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/kingwingfly/avmux.svg?style=for-the-badge
+[contributors-url]: https://github.com/kingwingfly/avmux/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/kingwingfly/avmux.svg?style=for-the-badge
+[forks-url]: https://github.com/kingwingfly/avmux/network/members
+[stars-shield]: https://img.shields.io/github/stars/kingwingfly/avmux.svg?style=for-the-badge
+[stars-url]: https://github.com/kingwingfly/avmux/stargazers
+[issues-shield]: https://img.shields.io/github/issues/kingwingfly/avmux.svg?style=for-the-badge
+[issues-url]: https://github.com/kingwingfly/avmux/issues
+[license-shield]: https://img.shields.io/github/license/kingwingfly/avmux.svg?style=for-the-badge
+[license-url]: https://github.com/kingwingfly/avmux/blob/master/LICENSE.txt
 [product-screenshot]: images/screenshot.png
 [Rust]: https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=Rust&logoColor=orange
 [Rust-url]: https://www.rust-lang.org
