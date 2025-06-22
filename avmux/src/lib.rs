@@ -13,20 +13,19 @@ pub mod error;
 
 use std::collections::HashMap;
 use std::ffi::{CString, NulError};
-use std::path::{Path, PathBuf};
 
 use error::AVMuxError;
 use rsmpeg::avformat::{AVFormatContextInput, AVFormatContextOutput};
 
 /// Represents an input file with a URL.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AVFileInput {
+pub struct AVFile {
     /// The URL of the file.
     pub path_url: String,
 }
 
-impl AVFileInput {
-    /// Creates a new `File` from a URL.
+impl AVFile {
+    /// Creates a new `File` from a url or path.
     pub fn new(path_url: impl AsRef<str>) -> Self {
         Self {
             path_url: path_url.as_ref().to_owned(),
@@ -42,44 +41,25 @@ impl AVFileInput {
         let c_path = self.url_path()?;
         AVFormatContextInput::open(c_path.as_c_str(), None, &mut None).map_err(Into::into)
     }
-}
-
-/// Represents an output file with a URL.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AVFileOutput {
-    /// The PathBuf of the file.
-    pub path: PathBuf,
-}
-
-impl AVFileOutput {
-    /// Creates a new `File` from a file path.
-    pub fn new(path: impl AsRef<Path>) -> Self {
-        Self {
-            path: path.as_ref().to_path_buf(),
-        }
-    }
 
     /// Open the file as format context output.
     fn ofmt_ctx(&self) -> Result<AVFormatContextOutput, AVMuxError> {
-        AVFormatContextOutput::create(
-            &CString::new(self.path.to_string_lossy().into_owned())?,
-            None,
-        )
-        .map_err(Into::into)
+        AVFormatContextOutput::create(&CString::new(self.path_url.as_str())?, None)
+            .map_err(Into::into)
     }
 }
 
 /// Trait for merging multiple media files into one.
 pub trait Mux {
     /// Merges multiple media files into a single output file.
-    fn mux(self, output: AVFileOutput) -> Result<(), AVMuxError>;
+    fn mux(self, output: AVFile) -> Result<(), AVMuxError>;
 }
 
 impl<FS> Mux for FS
 where
-    FS: IntoIterator<Item = AVFileInput>,
+    FS: IntoIterator<Item = AVFile>,
 {
-    fn mux(self, output: AVFileOutput) -> Result<(), AVMuxError> {
+    fn mux(self, output: AVFile) -> Result<(), AVMuxError> {
         let mut ofmt_ctx = output.ofmt_ctx()?;
         let mut stream_maps = vec![];
         for file in self.into_iter() {
@@ -129,9 +109,9 @@ mod tests {
 
     #[test]
     fn test_av_file_mux() {
-        let file1 = AVFileInput::new("testa.mp3");
-        let file2 = AVFileInput::new("testv.mp4");
-        let output = AVFileOutput::new("output.mp4");
+        let file1 = AVFile::new("testa.mp3");
+        let file2 = AVFile::new("testv.mp4");
+        let output = AVFile::new("output.mp4");
         let files = vec![file1, file2];
         files.mux(output).unwrap();
     }
