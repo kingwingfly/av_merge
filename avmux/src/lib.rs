@@ -39,13 +39,12 @@ impl AVFile {
     /// Open the file as format context input.
     fn ifmt_ctx(&self) -> Result<AVFormatContextInput, AVMuxError> {
         let c_path = self.url_path()?;
-        AVFormatContextInput::open(c_path.as_c_str(), None, &mut None).map_err(Into::into)
+        AVFormatContextInput::open(c_path.as_c_str()).map_err(Into::into)
     }
 
     /// Open the file as format context output.
     fn ofmt_ctx(&self) -> Result<AVFormatContextOutput, AVMuxError> {
-        AVFormatContextOutput::create(&CString::new(self.path_url.as_str())?, None)
-            .map_err(Into::into)
+        AVFormatContextOutput::create(&CString::new(self.path_url.as_str())?).map_err(Into::into)
     }
 }
 

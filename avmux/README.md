@@ -84,14 +84,9 @@ This crate provides a simple way to merge video and audio files into a single ou
 ### Prerequisites
 
 * Install FFmpeg and its development libraries
-    - **Linux**: Use your package manager to install FFmpeg, e.g., `sudo apt install ffmpeg` or `sudo pacman -S ffmpeg`
-    - **macOS**: Use Homebrew to install FFmpeg, e.g., `brew install ffmpeg`
-    - **Windows**: I don't know
-
 * install pkg-config
-    - **Linux**: Use your package manager to install pkg-config, e.g., `sudo pacman -S pkgconf`
-    - **macOS**: Use Homebrew to install pkg-config, e.g., `brew install pkgconf`
-    - **Windows**: I don't know
+
+See an [example GitHub workflow](https://github.com/kingwingfly/fav/blob/dev/.github/workflows/release.yaml).
 
 ### Importing the Crate
 
