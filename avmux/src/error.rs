@@ -1,30 +1,16 @@
-//! Error handling module for the library.
+//! Error types
 
-use rsmpeg::error::RsmpegError;
-use std::{ffi::NulError, ops::Deref};
+use thiserror::Error;
 
-type AVMuxErrorInner = terrors::OneOf<(RsmpegError, NulError)>;
-
-/// Type alias for errors that can occur in the library.
-#[derive(Debug)]
-pub struct AVMuxError(AVMuxErrorInner);
-
-impl Deref for AVMuxError {
-    type Target = AVMuxErrorInner;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl From<RsmpegError> for AVMuxError {
-    fn from(err: RsmpegError) -> Self {
-        Self(terrors::OneOf::new(err))
-    }
-}
-
-impl From<NulError> for AVMuxError {
-    fn from(err: NulError) -> Self {
-        Self(terrors::OneOf::new(err))
-    }
+#[allow(missing_docs)]
+#[derive(Debug, Error)]
+pub enum AVMuxError {
+    #[error("{0}")]
+    Rsmpeg(#[from] rsmpeg::error::RsmpegError),
+    #[error("{0}")]
+    Ffi(#[from] std::ffi::NulError),
+    #[error("{0}")]
+    CodecNotFound(String),
+    #[error("Source media parameters invalid")]
+    Invalid,
 }

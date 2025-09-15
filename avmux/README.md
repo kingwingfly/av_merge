@@ -63,10 +63,9 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This crate provides a simple way to merge video and audio files into a single output file. It uses the rsmpeg library, which is a Rust binding for FFmpeg, to handle the underlying media processing.
+This crate provides a simple way to merge video and audio files into a single output file. It uses the [rsmpeg](https://crates.io/crates/rsmpeg) library, which is a Rust binding for FFmpeg, to handle the underlying media processing.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 ### Built With
@@ -75,7 +74,6 @@ This crate provides a simple way to merge video and audio files into a single ou
 * [![rsmpeg][rsmpeg]][rsmpeg-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- GETTING STARTED -->
@@ -94,24 +92,45 @@ To use this crate in your Rust project, add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
+# if you want to mux audio and video and re-encode, try version 0.2
+avmux = { version = "0.2", features = ["aac", "hevc"] }
+# if you just want to mux audio and video without re-encode, try version 0.1
 avmux = { version = "0.1" }
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+NOTICE: version `0.2` hard-coded `nvenc` hwaccel as the encoder, which is non-free in FFmpeg's LICENSE.
+(You **cannot** distribute the FFmpeg binary or library with nvenc enabled for commertial usage. If you need, feel free to fork and modify this crate.)
 
+### Features
+
+- **ffmpeg8/ffmpeg7/ffmpeg6/link_system_ffmpeg/link_vcpkg_ffmpeg**: same as it is in [rsmpeg](https://github.com/larksuite/rsmpeg/tree/master/doc)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
 ```rust no_run
-use avmux::{AVFile, Mux as _};
-use std::path::PathBuf;
+use avmux::*;
 
-let video_file = AVFile::new("input_video.mp4");
-let audio_file = AVFile::new("https://music.com/input_audio.mp3");
-let output_file = AVFile::new("output.mp4");
-[video_file, audio_file].mux(output_file).unwrap();
+let video_file = VFile::new("input_video.mp4");
+let audio_file = AFile::new("https://music.com/input_audio.mp3");
+let output_file = VFile::new("output1.mp4");
+(video_file, audio_file).mux(output_file, CodecConfig::default()).unwrap();
+
+let file1 = AFile::new("testa.mp3");
+let file2 = VFile::new("testv.mp4");
+let output = VFile::new("output2.mp4");
+(file1, file2)
+    .mux(
+        output,
+        CodecConfig::builder()
+            .vconf(VConf::builder().format(VFormat::H264).build())
+            .aconf(AConf::builder().format(AFormat::AAC).build())
+            .build(),
+    )
+    .unwrap();
 ```
 
 _For more examples, please refer to the [Documentation](https://crates.io/avmux)_
