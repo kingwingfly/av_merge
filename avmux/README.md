@@ -93,7 +93,7 @@ To use this crate in your Rust project, add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
 # if you want to mux audio and video and re-encode, try version 0.2
-avmux = { version = "0.2", features = ["aac", "hevc"] }
+avmux = { version = "0.2" }
 # if you just want to mux audio and video without re-encode, try version 0.1
 avmux = { version = "0.1" }
 ```
