@@ -21,6 +21,13 @@ pub use mux::Mux;
 #[allow(missing_docs)]
 pub type Result<T> = std::result::Result<T, error::AVMuxError>;
 
+/// silent ffmpeg logs
+pub fn silent_log() {
+    unsafe {
+        rsmpeg::ffi::av_log_set_callback(None);
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

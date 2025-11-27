@@ -1,6 +1,6 @@
 [package]
 name = "avmux"
-version = "0.2.1"
+version = "0.2.2"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -17,7 +17,7 @@ bon = { version = "3.7.2" }
 thiserror = "2.0.16"
 
 [features]
-default = ["link_system_ffmpeg", "ffmpeg7_1"]
+default = ["link_system_ffmpeg", "ffmpeg8"]
 
 ffmpeg8 = ["rsmpeg/ffmpeg8"]
 ffmpeg7_1 = ["rsmpeg/ffmpeg7_1"]
