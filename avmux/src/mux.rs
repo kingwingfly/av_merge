@@ -27,11 +27,91 @@ use std::{
 
 /// Trait for merging multiple media files into one.
 pub trait Mux {
-    /// Block merge multiple media files into a single output file.
+    /// Simply mux two media files into a single output file.
+    fn simple_mux(self, output: VFile) -> Result<VFile>;
+    /// Encode and mux two media files into a single output file.
     fn mux(self, output: VFile, conf: CodecConfig) -> Result<VFile>;
 }
 
 impl Mux for (VFile, AFile) {
+    fn simple_mux(self, output: VFile) -> Result<VFile> {
+        let mut ofmt_ctx = output.ofmt_ctx()?;
+        let mut stream_maps = vec![];
+
+        {
+            let ifmt_ctx = self.0.ifmt_ctx()?;
+            let mut map = HashMap::new();
+            for stream in ifmt_ctx.streams() {
+                let codec_type = stream.codecpar().codec_type();
+                if !codec_type.is_video() && !codec_type.is_audio() && !codec_type.is_subtitle() {
+                    continue;
+                }
+                let mut new_stream = ofmt_ctx.new_stream();
+                new_stream.set_codecpar(stream.codecpar().clone());
+                map.insert(stream.index, new_stream.index);
+            }
+            stream_maps.push((ifmt_ctx, map));
+        }
+        {
+            let ifmt_ctx = self.1.ifmt_ctx()?;
+            let mut map = HashMap::new();
+            for stream in ifmt_ctx.streams() {
+                let codec_type = stream.codecpar().codec_type();
+                if !codec_type.is_video() && !codec_type.is_audio() && !codec_type.is_subtitle() {
+                    continue;
+                }
+                let mut new_stream = ofmt_ctx.new_stream();
+                new_stream.set_codecpar(stream.codecpar().clone());
+                map.insert(stream.index, new_stream.index);
+            }
+            stream_maps.push((ifmt_ctx, map));
+        }
+
+        ofmt_ctx.write_header(&mut None)?;
+
+        let ofmt_ctx = Arc::new(Mutex::new(ofmt_ctx));
+
+        let jhs = stream_maps
+            .into_iter()
+            .map(|(mut ifmt_ctx, map)| {
+                let ofmt_ctx = ofmt_ctx.clone();
+                std::thread::spawn(move || {
+                    loop {
+                        match ifmt_ctx.read_packet() {
+                            Ok(Some(mut packet)) => {
+                                let Some(index) = map.get(&packet.stream_index) else {
+                                    continue;
+                                };
+                                let old_ts =
+                                    ifmt_ctx.streams()[packet.stream_index as usize].time_base;
+                                let new_ts =
+                                    ofmt_ctx.lock().unwrap().streams()[*index as usize].time_base;
+                                packet.rescale_ts(old_ts, new_ts);
+                                packet.set_stream_index(*index);
+                                packet.set_pos(-1);
+                                ofmt_ctx
+                                    .lock()
+                                    .unwrap()
+                                    .interleaved_write_frame(&mut packet)?;
+                            }
+                            Ok(None) => break,
+                            e => {
+                                e?;
+                            }
+                        }
+                    }
+                    Ok::<_, RsmpegError>(())
+                })
+            })
+            .collect::<Vec<_>>();
+        for jh in jhs {
+            jh.join().expect("JoinHandle should be able to be joined")?;
+        }
+
+        ofmt_ctx.lock().unwrap().write_trailer()?;
+        Ok(output)
+    }
+
     fn mux(self, output: VFile, conf: CodecConfig) -> Result<VFile> {
         let CodecConfig { vconf, aconf } = conf;
 
@@ -154,7 +234,7 @@ impl Mux for (VFile, AFile) {
                         .hw_frames_ctx_mut()
                         .expect("Encoder should have hw ctx")
                         .get_buffer(&mut hw_v_frame)?;
-                    hw_v_frame.hwframe_transfer_data(frame).unwrap();
+                    hw_v_frame.hwframe_transfer_data(frame)?;
                     hw_v_frame.set_time_base(time_base);
                     hw_v_frame.set_pts(frame.pts);
                     encoder.send_frame(Some(&hw_v_frame))?;
@@ -344,16 +424,14 @@ impl Mux for (VFile, AFile) {
                         a_frame.set_pts(a_pts);
                         a_pts += a_frame.nb_samples as i64;
                         unsafe {
-                            a_fifo
-                                .read(a_frame.data_mut().as_mut_ptr(), a_frame.nb_samples)
-                                .unwrap();
+                            a_fifo.read(a_frame.data_mut().as_mut_ptr(), a_frame.nb_samples)?;
                         }
-                        recv_packets(&mut encoder, ofmt_ctx).unwrap();
-                        encoder.send_frame(Some(&a_frame)).unwrap();
+                        recv_packets(&mut encoder, ofmt_ctx)?;
+                        encoder.send_frame(Some(&a_frame))?;
                     }
-                    recv_packets(&mut encoder, ofmt_ctx).unwrap();
-                    encoder.send_frame(None).unwrap();
-                    recv_packets(&mut encoder, ofmt_ctx).unwrap();
+                    recv_packets(&mut encoder, ofmt_ctx)?;
+                    encoder.send_frame(None)?;
+                    recv_packets(&mut encoder, ofmt_ctx)?;
                 }
                 Ok(())
             };
@@ -407,6 +485,11 @@ impl Mux for (VFile, AFile) {
 }
 
 impl Mux for (AFile, VFile) {
+    #[inline(always)]
+    fn simple_mux(self, output: VFile) -> Result<VFile> {
+        (self.1, self.0).simple_mux(output)
+    }
+
     #[inline(always)]
     fn mux(self, output: VFile, conf: CodecConfig) -> Result<VFile> {
         (self.1, self.0).mux(output, conf)

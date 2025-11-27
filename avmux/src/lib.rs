@@ -28,6 +28,13 @@ pub fn silent_log() {
     }
 }
 
+/// resume ffmpeg logs
+pub fn resume_log() {
+    unsafe {
+        rsmpeg::ffi::av_log_set_callback(Some(rsmpeg::ffi::av_log_default_callback));
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
