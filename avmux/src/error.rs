@@ -6,7 +6,7 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum AVMuxError {
     #[error("{0}")]
-    Rsmpeg(#[from] rsmpeg::error::RsmpegError),
+    Ffmpeg(#[from] ffmpeg_next::Error),
     #[error("{0}")]
     Ffi(#[from] std::ffi::NulError),
     #[error("{0}")]

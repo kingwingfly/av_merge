@@ -1,10 +1,20 @@
 //! Media file
 
 use std::ffi::CString;
+use std::sync::Once;
 
-use rsmpeg::avformat::{AVFormatContextInput, AVFormatContextOutput};
+use ffmpeg_next::format::{self, context};
 
 use crate::Result;
+
+/// `ffmpeg-next` requires a one-off global init (error tables, network stack).
+/// Doing it lazily here keeps it invisible to callers.
+fn init() {
+    static INIT: Once = Once::new();
+    INIT.call_once(|| {
+        let _ = ffmpeg_next::init();
+    });
+}
 
 /// AV file trait.
 pub trait AVFile {
@@ -17,13 +27,18 @@ pub trait AVFile {
     }
 
     /// Open the file as format context input.
-    fn ifmt_ctx(&self) -> Result<AVFormatContextInput> {
-        AVFormatContextInput::open(self.c_path_url()?.as_c_str()).map_err(Into::into)
+    fn ifmt_ctx(&self) -> Result<context::Input> {
+        init();
+        // `ffmpeg-next` panics on an interior NUL; reject it as an error first.
+        self.c_path_url()?;
+        format::input(self.path_url()).map_err(Into::into)
     }
 
     /// Open the file as format context output.
-    fn ofmt_ctx(&self) -> Result<AVFormatContextOutput> {
-        AVFormatContextOutput::create(self.c_path_url()?.as_c_str()).map_err(Into::into)
+    fn ofmt_ctx(&self) -> Result<context::Output> {
+        init();
+        self.c_path_url()?;
+        format::output(self.path_url()).map_err(Into::into)
     }
 }
 

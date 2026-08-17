@@ -1,4 +1,4 @@
-//! A crate to merge video and audio based on rsmpeg (dynamic link with ffmpeg lib).
+//! A crate to merge video and audio based on ffmpeg-next (dynamic link with ffmpeg lib).
 //!
 //! More information can be found in the [`document`].
 #![deny(
@@ -11,6 +11,7 @@
 pub mod codec;
 pub mod document;
 pub mod error;
+mod fifo;
 pub mod file;
 pub mod mux;
 
@@ -24,14 +25,14 @@ pub type Result<T> = std::result::Result<T, error::AVMuxError>;
 /// silent ffmpeg logs
 pub fn silent_log() {
     unsafe {
-        rsmpeg::ffi::av_log_set_callback(None);
+        ffmpeg_next::ffi::av_log_set_callback(None);
     }
 }
 
 /// resume ffmpeg logs
 pub fn resume_log() {
     unsafe {
-        rsmpeg::ffi::av_log_set_callback(Some(rsmpeg::ffi::av_log_default_callback));
+        ffmpeg_next::ffi::av_log_set_callback(Some(ffmpeg_next::ffi::av_log_default_callback));
     }
 }
 

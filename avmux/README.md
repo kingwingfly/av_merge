@@ -17,7 +17,7 @@
 <div align="center">
 <h3 align="center">AV Merge</h3>
   <p align="center">
-    A crate to merge video and audio based on rsmpeg (dynamic link with ffmpeg lib)
+    A crate to merge video and audio based on ffmpeg-next (dynamic link with ffmpeg lib)
     <br />
     <a href="https://github.com/kingwingfly/avmux"><strong>Explore the docs »</strong></a>
     <br />
@@ -63,7 +63,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This crate provides a simple way to merge video and audio files into a single output file. It uses the [rsmpeg](https://crates.io/crates/rsmpeg) library, which is a Rust binding for FFmpeg, to handle the underlying media processing.
+This crate provides a simple way to merge video and audio files into a single output file. It uses the [ffmpeg-next](https://crates.io/crates/ffmpeg-next) library, which is a Rust binding for FFmpeg, to handle the underlying media processing.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -71,7 +71,7 @@ This crate provides a simple way to merge video and audio files into a single ou
 ### Built With
 
 * [![Rust][Rust]][Rust-url]
-* [![rsmpeg][rsmpeg]][rsmpeg-url]
+* [![ffmpeg-next][ffmpeg-next]][ffmpeg-next-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -81,7 +81,7 @@ This crate provides a simple way to merge video and audio files into a single ou
 
 ### Prerequisites
 
-* Install FFmpeg and its development libraries
+* Install FFmpeg (9.0 is what this crate is developed against) and its development libraries
 * install pkg-config
 
 See an [example GitHub workflow](https://github.com/kingwingfly/fav/blob/dev/.github/workflows/release.yaml).
@@ -92,18 +92,24 @@ To use this crate in your Rust project, add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-# if you want to mux audio and video and optional re-encode, try version 0.2
+# 0.3 is built on `ffmpeg-next` and supports FFmpeg 9
+avmux = { version = "0.3" }
+# 0.2 is built on `rsmpeg` and supports FFmpeg <= 8
 avmux = { version = "0.2" }
 # if you just want to mux audio and video without re-encode, try version 0.1
 avmux = { version = "0.1" }
 ```
 
-NOTICE: version `0.2` hard-coded `nvenc` hwaccel as the encoder, which is non-free in FFmpeg's LICENSE.
+NOTICE: versions `0.2` and `0.3` hard-code `nvenc` hwaccel as the encoder, which is non-free in FFmpeg's LICENSE.
 (You **cannot** distribute the FFmpeg binary or library with nvenc enabled for commertial usage. If you need, feel free to fork and modify this crate.)
 
 ### Features
 
-- **ffmpeg8/ffmpeg7/ffmpeg6/link_system_ffmpeg/link_vcpkg_ffmpeg**: same as it is in [rsmpeg](https://github.com/larksuite/rsmpeg/tree/master/doc)
+No feature has to be selected to pick an FFmpeg version or a linking mode: `ffmpeg-next`
+probes the installed libraries itself (pkg-config, or vcpkg on MSVC).
+
+- **build**: build FFmpeg from source instead of linking the system libraries
+- **static**: link FFmpeg statically
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -211,5 +217,5 @@ Project Link: [https://github.com/kingwingfly/avmux](https://github.com/kingwing
 [license-url]: https://github.com/kingwingfly/avmux/blob/master/LICENSE.txt
 [Rust]: https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=Rust&logoColor=orange
 [Rust-url]: https://www.rust-lang.org
-[rsmpeg]: https://img.shields.io/badge/rsmpeg-000000?style=for-the-badge&logo=rsmpeg&logoColor=white
-[rsmpeg-url]: https://crates.io/crates/rsmpeg
+[ffmpeg-next]: https://img.shields.io/badge/ffmpeg--next-000000?style=for-the-badge&logo=ffmpeg&logoColor=white
+[ffmpeg-next-url]: https://crates.io/crates/ffmpeg-next
